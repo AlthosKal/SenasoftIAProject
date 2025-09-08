@@ -1,0 +1,37 @@
+# Entornos virtuales
+venv/
+env/
+.entornoVirtual/
+*/entornoVirtual/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de configuración locales
+*.env
+*.env.*
+!example.env
+
+# Archivos de logs
+*.log
+
+# Configuración de IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de compilación
+build/
+dist/
+*.egg-info/
+
+# Archivos de coverage / testing
+.coverage
+htmlcov/
+.cache/
+pytest_cache/
+
+# Archivos de Docker
+*.pid
