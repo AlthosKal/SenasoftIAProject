@@ -1,0 +1,63 @@
+# Entornos virtuales
+venv/
+env/
+.entornoVirtual/
+*/entornoVirtual/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de configuración locales
+*.env
+*.env.*
+!example.env
+
+# Base de datos (SQLite)
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Archivos de logs
+*.log
+logs/
+
+# Flask específico
+instance/
+.flaskenv
+
+# Configuración de IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de compilación
+build/
+dist/
+*.egg-info/
+
+# Archivos de coverage / testing
+.coverage
+htmlcov/
+.cache/
+pytest_cache/
+.pytest_cache/
+
+# Archivos temporales
+*.tmp
+*.bak
+*~
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de Docker
+*.pid
+Dockerfile.dev
+docker-compose.override.yml
+
+# Archivos de migración temporal (Flask-Migrate)
+migrations/versions/*.pyc

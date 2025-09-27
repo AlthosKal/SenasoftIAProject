@@ -1,0 +1,62 @@
+/* MedicoIA - Custom CSS Styles */
+
+.gradient-medical {
+    background: linear-gradient(135deg, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.medical-shadow {
+    box-shadow: 0 10px 25px -5px rgba(20, 184, 166, 0.15), 0 10px -5px rgba(20, 184, 166, 0.08);
+}
+
+.loading-dots::after {
+    content: '';
+    animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+.message-bubble {
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.confidence-bar {
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #e5e7eb;
+}
+
+.confidence-fill {
+    height: 100%;
+    transition: width 0.8s ease-out;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
