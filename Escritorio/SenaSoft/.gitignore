@@ -1,0 +1,29 @@
+# Archivos de configuración y entorno
+.env
+*.env
+*.env.*
+!example.env
+
+# Directorios de node_modules
+node_modules/
+**/node_modules/
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+*.tmp
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
