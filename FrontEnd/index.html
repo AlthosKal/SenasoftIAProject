@@ -132,21 +132,27 @@
                 <!-- Navegación por Tabs - Centrada absoluta -->
                 <div class="w-full flex justify-center">
                     <div class="flex space-x-8">
-                        <button onclick="showTab('chat')" 
-                                class="tab-btn active px-6 py-2 text-sm font-medium border-b-2 border-white text-white transition-all duration-200 hover:text-teal-100">
+                        <a href="#chat-tab" 
+                           hx-get="/" 
+                           hx-target="#main-content" 
+                           hx-swap="innerHTML" 
+                           class="tab-btn active px-6 py-2 text-sm font-medium border-b-2 border-white text-white transition-all duration-200 hover:text-teal-100">
                             <i class="fas fa-stethoscope mr-2"></i>
                             Diagnóstico
-                        </button>
-                        <button onclick="showTab('history')" 
-                                class="tab-btn px-6 py-2 text-sm font-medium border-b-2 border-transparent text-teal-100 hover:text-white hover:border-teal-300 transition-all duration-200">
+                        </a>
+                        <a href="#history-tab" 
+                           hx-get="/api/get-history" 
+                           hx-target="#history-content" 
+                           hx-swap="innerHTML"
+                           class="tab-btn px-6 py-2 text-sm font-medium border-b-2 border-transparent text-teal-100 hover:text-white hover:border-teal-300 transition-all duration-200">
                             <i class="fas fa-history mr-2"></i>
                             Historial
-                        </button>
-                        <button onclick="showTab('about')" 
-                                class="tab-btn px-6 py-2 text-sm font-medium border-b-2 border-transparent text-teal-100 hover:text-white hover:border-teal-300 transition-all duration-200">
+                        </a>
+                        <a href="#about-tab" 
+                           class="tab-btn px-6 py-2 text-sm font-medium border-b-2 border-transparent text-teal-100 hover:text-white hover:border-teal-300 transition-all duration-200">
                             <i class="fas fa-info-circle mr-2"></i>
                             Acerca de
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -154,7 +160,7 @@
     </nav>
 
     <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         
         <!-- Tab: Diagnóstico -->
         <div id="chat-tab" class="tab-content">
@@ -175,58 +181,45 @@
                         </div>
                         
                         <!-- Chat Messages -->
-                        <div id="chat-messages" class="h-[450px] overflow-y-auto p-6 space-y-4 scrollbar-thin bg-gray-50">
-                            <!-- Mensaje de bienvenida -->
-                            <div class="flex items-start space-x-3 animate-fade-in">
-                                <div class="flex-shrink-0">
-                                    <div class="w-10 h-10 bg-medical-500 rounded-full flex items-center justify-center text-white">
-                                        <i class="fas fa-robot"></i>
-                                    </div>
-                                </div>
-                                <div class="message-bubble bg-white rounded-2xl rounded-tl-sm p-4 shadow-md border border-gray-200">
-                                    <div class="text-sm text-gray-900">
-                                        <div class="font-medium text-medical-600 mb-2">¡Hola! Soy tu asistente médico inteligente</div>
-                                        <p>Puedes:</p>
-                                        <ul class="list-disc list-inside mt-2 space-y-1 text-gray-700">
-                                            <li><strong>Describir síntomas</strong> del paciente en texto libre</li>
-                                            <li><strong>Subir imágenes médicas</strong> (rayos X, resonancias, etc.)</li>
-                                            <li><strong>Consultar el historial</strong> de diagnósticos anteriores</li>
-                                        </ul>
-                                        <div class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                            <p class="text-xs text-yellow-800">
-                                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                <strong>Importante:</strong> Este es un sistema de asistencia que debe ser validado por un profesional médico.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div id="chat-messages" 
+                             class="h-[450px] overflow-y-auto p-6 space-y-4 scrollbar-thin bg-gray-50"
+                             hx-get="/components/chat-messages" 
+                             hx-trigger="load">
+                            <!-- Contenido cargado dinámicamente -->
                         </div>
                         
                         <!-- Input Area -->
                         <div class="p-6 border-t border-gray-100 bg-white">
-                            <form id="chat-form" class="space-y-4">
+                            <form hx-post="/api/chat" 
+                                  hx-target="#chat-messages" 
+                                  hx-swap="innerHTML"
+                                  hx-trigger="submit"
+                                  hx-on::after-request="this.reset(); htmx.trigger('#notification-area', 'show-notification', {detail: {message: 'Mensaje enviado', type: 'success'}})"
+                                  class="space-y-4">
                                 <div class="flex space-x-4">
                                     <div class="flex-1">
                                         <textarea 
-                                            id="message-input"
+                                            name="message"
                                             placeholder="Describe los síntomas del paciente: fiebre, dolor de cabeza, tos..."
                                             class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-medical-500 focus:border-medical-500 resize-none scrollbar-thin"
                                             rows="3"
-                                            maxlength="1000"></textarea>
+                                            maxlength="1000"
+                                            required></textarea>
                                         <div class="text-xs text-gray-500 mt-1">
-                                            <span id="char-count">0</span>/1000 caracteres
+                                            <span>Máximo 1000 caracteres</span>
                                         </div>
                                     </div>
                                     <div class="flex flex-col space-y-2">
                                         <button type="submit" 
-                                                class="px-6 py-3 bg-medical-500 text-white rounded-xl hover:bg-medical-600 focus:ring-2 focus:ring-medical-500 focus:ring-offset-2 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                                                id="send-btn">
+                                                class="px-6 py-3 bg-medical-500 text-white rounded-xl hover:bg-medical-600 focus:ring-2 focus:ring-medical-500 focus:ring-offset-2 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i class="fas fa-paper-plane mr-2"></i>
                                             Diagnosticar
                                         </button>
                                         <button type="button" 
-                                                onclick="clearChat()"
+                                                hx-post="/api/clear-chat"
+                                                hx-target="#chat-messages"
+                                                hx-swap="innerHTML"
+                                                hx-confirm="¿Estás seguro de que quieres limpiar el chat?"
                                                 class="px-6 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 text-sm">
                                             <i class="fas fa-trash mr-2"></i>
                                             Limpiar
@@ -248,35 +241,37 @@
                                 <p class="text-gray-600 text-sm mt-1">Sube rayos X, resonancias o imágenes médicas</p>
                             </div>
                             
-                            <!-- Área de subida de imagen -->
-                            <div class="mb-6">
-                                <div id="image-drop-zone" 
-                                     class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-medical-400 transition-colors duration-200 cursor-pointer">
-                                    <input type="file" id="image-input" accept="image/*" class="hidden">
-                                    <div id="drop-zone-content">
-                                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-3"></i>
-                                        <p class="text-gray-600 text-sm">
-                                            Arrastra una imagen aquí o 
-                                            <span class="text-medical-500 font-medium">haz clic para seleccionar</span>
-                                        </p>
-                                        <p class="text-xs text-gray-500 mt-2">PNG, JPG hasta 10MB</p>
-                                    </div>
-                                    <div id="image-preview" class="hidden">
-                                        <img id="preview-img" class="max-w-full h-32 object-cover rounded-lg mx-auto mb-2">
-                                        <p class="text-sm text-gray-600" id="image-name"></p>
-                                        <button onclick="removeImage()" class="text-red-500 text-xs hover:text-red-700 mt-1">
-                                            <i class="fas fa-times mr-1"></i>Remover
-                                        </button>
-                                    </div>
+                            <!-- Formulario de análisis de imagen -->
+                            <form hx-post="/api/analyze-image" 
+                                  hx-target="#chat-messages" 
+                                  hx-swap="innerHTML"
+                                  hx-encoding="multipart/form-data"
+                                  hx-on::after-request="this.reset()"
+                                  class="mb-6">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Imagen médica</label>
+                                    <input type="file" 
+                                           name="image" 
+                                           accept="image/*" 
+                                           required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-medical-500 focus:border-medical-500">
+                                    <p class="text-xs text-gray-500 mt-1">PNG, JPG hasta 10MB</p>
                                 </div>
-                            </div>
-                            
-                            <button id="analyze-image-btn" 
-                                    class="w-full px-4 py-3 bg-medical-500 text-white rounded-xl hover:bg-medical-600 focus:ring-2 focus:ring-medical-500 focus:ring-offset-2 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled>
-                                <i class="fas fa-microscope mr-2"></i>
-                                Analizar Imagen
-                            </button>
+                                
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción (opcional)</label>
+                                    <textarea name="message" 
+                                              placeholder="Describe la imagen o proporciona contexto adicional..."
+                                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-medical-500 focus:border-medical-500"
+                                              rows="3"></textarea>
+                                </div>
+                                
+                                <button type="submit" 
+                                        class="w-full px-4 py-3 bg-medical-500 text-white rounded-xl hover:bg-medical-600 focus:ring-2 focus:ring-medical-500 focus:ring-offset-2 transition-all duration-200 font-medium">
+                                    <i class="fas fa-microscope mr-2"></i>
+                                    Analizar Imagen
+                                </button>
+                            </form>
                             
                             <!-- Información del sistema -->
                             <div class="mt-6 p-4 bg-gray-50 rounded-xl">
@@ -309,7 +304,9 @@
                                 <p class="text-gray-600 mt-1">Revisa consultas médicas anteriores y diagnósticos</p>
                             </div>
                         </div>
-                        <button onclick="loadHistory()" 
+                        <button hx-get="/api/get-history" 
+                                hx-target="#history-content" 
+                                hx-swap="innerHTML"
                                 class="px-4 py-2 bg-medical-500 text-white rounded-lg hover:bg-medical-600 transition-colors duration-200">
                             <i class="fas fa-sync-alt mr-2"></i>
                             Actualizar
@@ -317,7 +314,10 @@
                     </div>
                 </div>
                 
-                <div id="history-content" class="p-6">
+                <div id="history-content" 
+                     class="p-6"
+                     hx-get="/api/get-history" 
+                     hx-trigger="load">
                     <div class="text-center py-12">
                         <div class="text-gray-400 text-6xl mb-4">
                             <i class="fas fa-history"></i>
@@ -464,19 +464,50 @@
         </div>
     </div>
 
-    <!-- JavaScript -->
-    <script src="app.js"></script>
+    <!-- Área de notificaciones -->
+    <div id="notification-area"></div>
     
-    <!-- Auto-close servidor al cerrar página -->
+    <!-- Script mínimo para funcionalidad básica -->
     <script>
+        // Auto-close servidor al cerrar página
         window.addEventListener('beforeunload', function(e) {
-            // Enviar señal al servidor para cerrarse
             navigator.sendBeacon('/shutdown');
         });
         
         window.addEventListener('pagehide', function(e) {
-            // Fallback para móviles
             navigator.sendBeacon('/shutdown');
+        });
+        
+        // Funcionalidad para tabs
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    const target = this.getAttribute('href');
+                    if (target && target.startsWith('#')) {
+                        e.preventDefault();
+                        
+                        // Ocultar todos los tabs
+                        tabContents.forEach(content => content.classList.add('hidden'));
+                        tabs.forEach(t => {
+                            t.classList.remove('active', 'border-white', 'text-white');
+                            t.classList.add('border-transparent', 'text-teal-100');
+                        });
+                        
+                        // Mostrar tab seleccionado
+                        const targetTab = document.querySelector(target);
+                        if (targetTab) {
+                            targetTab.classList.remove('hidden');
+                        }
+                        
+                        // Activar botón
+                        this.classList.add('active', 'border-white', 'text-white');
+                        this.classList.remove('border-transparent', 'text-teal-100');
+                    }
+                });
+            });
         });
     </script>
 </body>
