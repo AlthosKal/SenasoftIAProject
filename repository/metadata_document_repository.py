@@ -19,7 +19,8 @@ class MetadataDocumentRepository(BaseRepository):
         """Create necessary indexes for optimal performance"""
         try:
             # Skip index creation if using Atlas (requires special permissions)
-            if "mongodb.net" in os.getenv('DATABASE_URL', ''):
+            database_url = os.getenv('DATABASE_URL', '')
+            if "mongodb.net" in database_url or "mongodb+srv" in database_url:
                 print("MongoDB Atlas detected, skipping index creation")
                 return
                 
@@ -141,3 +142,12 @@ class MetadataDocumentRepository(BaseRepository):
         except PyMongoError as e:
             print(f"Error getting document stats: {e}")
             return {"by_type": [], "total": {"total": 0, "valid_total": 0, "invalid_total": 0}}
+    
+    def find_by_document_id(self, document_id: str) -> List[Dict[str, Any]]:
+        """Find metadata documents by document_id"""
+        try:
+            cursor = self.collection.find({"document_id": document_id})
+            return list(cursor)
+        except PyMongoError as e:
+            print(f"Error finding documents by document_id {document_id}: {e}")
+            return []

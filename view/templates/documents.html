@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedicoIA - Gestión de Documentos</title>
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='Medico IA.png') }}" type="image/png">
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        .upload-area {
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            background-color: #f8fafc;
+            border-color: #0d9488;
+        }
+        .file-preview {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='Medio-IA-Blanco.png') }}" alt="MedicoIA" class="w-8 h-8">
+                    <h1 class="text-xl font-semibold text-gray-800">MedicoIA - Documentos</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="bg-teal-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-teal-700">
+                        <i class="fas fa-comments mr-1"></i> Volver al Chat
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Upload Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-cloud-upload-alt mr-2 text-blue-600"></i>
+                Subir Documentos Médicos
+            </h2>
+            
+            {% if success_message %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <p class="text-green-800 text-sm">{{ success_message }}</p>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if error %}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                        <p class="text-red-800 text-sm">{{ error }}</p>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                <!-- File Upload Area -->
+                <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <div class="max-w-md mx-auto">
+                        <i class="fas fa-file-medical text-4xl text-gray-400 mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">
+                            Selecciona documentos médicos
+                        </h3>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Formatos soportados: PDF, TXT, DOC, DOCX, MD
+                        </p>
+                        
+                        <label for="documents" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-folder-open mr-2"></i>
+                            Seleccionar Archivos
+                            <input type="file" id="documents" name="documents" multiple 
+                                   accept=".pdf,.txt,.doc,.docx,.md" class="hidden">
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Document Metadata -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="document_type" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tipo de Documento
+                        </label>
+                        <select name="document_type" id="document_type" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="medical_guide">Guía Médica</option>
+                            <option value="protocol">Protocolo</option>
+                            <option value="research">Investigación</option>
+                            <option value="manual">Manual</option>
+                            <option value="reference">Referencia</option>
+                            <option value="other">Otro</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="specialty" class="block text-sm font-medium text-gray-700 mb-1">
+                            Especialidad Médica
+                        </label>
+                        <select name="specialty" id="specialty" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="general">Medicina General</option>
+                            <option value="cardiology">Cardiología</option>
+                            <option value="neurology">Neurología</option>
+                            <option value="pediatrics">Pediatría</option>
+                            <option value="surgery">Cirugía</option>
+                            <option value="emergency">Emergencias</option>
+                            <option value="internal">Medicina Interna</option>
+                            <option value="other">Otra</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                        Descripción (Opcional)
+                    </label>
+                    <textarea name="description" id="description" rows="3" 
+                              placeholder="Describe brevemente el contenido del documento..."
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
+                    <i class="fas fa-upload"></i>
+                    <span>Procesar y Almacenar Documentos</span>
+                </button>
+            </form>
+        </div>
+        
+        <!-- Documents List -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-folder mr-2 text-green-600"></i>
+                Documentos Almacenados ({{ documents|length }})
+            </h2>
+            
+            {% if documents %}
+                <div class="space-y-3">
+                    {% for doc in documents %}
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3 mb-2">
+                                        <i class="fas fa-file-alt text-blue-600"></i>
+                                        <h3 class="font-medium text-gray-800">{{ doc.title }}</h3>
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                            {{ doc.document_type|title }}
+                                        </span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                            {{ doc.specialty|title }}
+                                        </span>
+                                    </div>
+                                    
+                                    {% if doc.description %}
+                                        <p class="text-sm text-gray-600 mb-2">{{ doc.description }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                        <span>
+                                            <i class="fas fa-calendar mr-1"></i>
+                                            {{ doc.created_date.strftime('%d/%m/%Y %H:%M') if doc.created_date else 'Sin fecha' }}
+                                        </span>
+                                        <span>
+                                            <i class="fas fa-puzzle-piece mr-1"></i>
+                                            {{ doc.fragment_count }} fragmentos
+                                        </span>
+                                        <span>
+                                            <i class="fas fa-file-text mr-1"></i>
+                                            {{ doc.file_extension|upper }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <form method="POST" action="/documents/delete/{{ doc.id }}" class="inline" 
+                                          onsubmit="return confirm('¿Estás seguro de eliminar este documento?')">
+                                        <button type="submit" 
+                                                class="text-red-600 hover:text-red-800 p-1">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <i class="fas fa-folder-open text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">No hay documentos almacenados</h3>
+                    <p class="text-gray-600">Sube tu primer documento médico para comenzar a usar el sistema RAG.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>

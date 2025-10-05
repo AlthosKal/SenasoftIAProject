@@ -46,11 +46,16 @@
                 
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-500">Asistente Médico Especializado</span>
-                    {% if conversation_id %}
-                        <a href="/" class="bg-teal-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-teal-700">
-                            <i class="fas fa-plus mr-1"></i> Nueva Conversación
+                    <div class="flex items-center space-x-2">
+                        <a href="/documents" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700">
+                            <i class="fas fa-file-upload mr-1"></i> Documentos
                         </a>
-                    {% endif %}
+                        {% if conversation_id %}
+                            <a href="/" class="bg-teal-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-teal-700">
+                                <i class="fas fa-plus mr-1"></i> Nueva Conversación
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>

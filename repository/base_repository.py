@@ -20,6 +20,10 @@ class BaseRepository(ABC):
     def _get_mongo_client(self) -> MongoClient:
         """Get MongoDB client from environment variables"""
         mongo_uri = os.getenv('DATABASE_URL')
+        if not mongo_uri:
+            raise ValueError("DATABASE_URL environment variable not found. Please check your .env file.")
+        
+        print(f"Connecting to MongoDB: {mongo_uri[:20]}..." if len(mongo_uri) > 20 else mongo_uri)
         return MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
     
     @abstractmethod

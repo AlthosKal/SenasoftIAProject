@@ -19,7 +19,8 @@ class FragmentDocumentRepository(BaseRepository):
         """Create necessary indexes including vector search index"""
         try:
             # Skip index creation if using Atlas (requires special permissions)
-            if "mongodb.net" in os.getenv('DATABASE_URL', ''):
+            database_url = os.getenv('DATABASE_URL', '')
+            if "mongodb.net" in database_url or "mongodb+srv" in database_url:
                 print("MongoDB Atlas detected, skipping index creation")
                 return
             
@@ -258,3 +259,12 @@ class FragmentDocumentRepository(BaseRepository):
                 "avg_fragments_per_doc": 0,
                 "total_content_length": 0
             }
+    
+    def delete_by_document_id(self, document_id: str) -> bool:
+        """Delete all fragments for a specific document_id"""
+        try:
+            result = self.collection.delete_many({"document_id": document_id})
+            return result.deleted_count > 0
+        except PyMongoError as e:
+            print(f"Error deleting fragments for document {document_id}: {e}")
+            return False

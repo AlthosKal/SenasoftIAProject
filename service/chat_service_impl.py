@@ -9,6 +9,7 @@ from .chat_service import ChatService
 from repository.chat_history_repository import ChatHistoryRepository
 from repository.fragment_document_repository import FragmentDocumentRepository
 from entity.chat_history import ChatHistory
+from .rag_service_impl import RAGServiceImpl
 
 
 class ChatServiceImpl(ChatService):
@@ -20,8 +21,7 @@ class ChatServiceImpl(ChatService):
     def __init__(self):
         self.chat_repository = ChatHistoryRepository()
         self.fragment_repository = FragmentDocumentRepository()
-        self.llm_service = None  # Will be initialized with LangChain
-        self.rag_service = None  # Will be initialized with RAG system
+        self.rag_service = RAGServiceImpl()  # Initialize RAG service
         
     def send_text_message(self, message: str, conversation_id: Optional[str] = None) -> Dict[str, Any]:
         """Process a text-only message using RAG and LLM"""
@@ -167,13 +167,38 @@ class ChatServiceImpl(ChatService):
     def _get_rag_context(self, query: str) -> Dict[str, Any]:
         """Retrieve relevant context using RAG system"""
         try:
-            # This will be implemented with LangChain RAG
-            # For now, return a placeholder
-            return {
-                "context": "Medical context from RAG system",
-                "sources": [],
-                "relevance_score": 0.8
-            }
+            # Search for similar documents using RAG
+            similar_docs = self.rag_service.search_similar_documents(query, limit=3)
+            
+            if similar_docs:
+                # Combine context from multiple documents
+                context_parts = []
+                sources = []
+                
+                for doc in similar_docs:
+                    context_parts.append(f"[{doc['document_title']}]: {doc['content'][:500]}")
+                    sources.append({
+                        "title": doc['document_title'],
+                        "type": doc['document_type'],
+                        "specialty": doc['specialty'],
+                        "relevance": doc['score']
+                    })
+                
+                combined_context = "\n\n".join(context_parts)
+                avg_score = sum(doc['score'] for doc in similar_docs) / len(similar_docs)
+                
+                return {
+                    "context": combined_context,
+                    "sources": sources,
+                    "relevance_score": avg_score
+                }
+            else:
+                return {
+                    "context": "No se encontraron documentos relevantes en la base de conocimiento médica.",
+                    "sources": [],
+                    "relevance_score": 0.0
+                }
+                
         except Exception as e:
             print(f"Error retrieving RAG context: {e}")
             return {"context": "", "sources": [], "relevance_score": 0.0}
