@@ -1,0 +1,50 @@
+# Web Framework
+flask==2.3.3
+flask-cors==4.0.0
+
+# MongoDB
+pymongo==4.6.0
+motor==3.3.2
+
+# LangChain ecosystem
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-openai>=0.0.5
+langchain-ollama>=0.1.0
+
+# OpenAI embeddings
+openai==1.6.1
+
+# Environment and configuration
+python-dotenv==1.0.0
+
+# Data validation
+pydantic==2.5.2
+marshmallow==3.20.2
+
+# HTTP requests
+requests==2.31.0
+
+# Image processing
+pillow==10.1.0
+
+# Date and time
+python-dateutil==2.8.2
+
+# Async support
+asyncio==3.4.3
+
+# Logging
+structlog==23.2.0
+
+# Testing (optional)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Type hints
+typing-extensions==4.9.0
+
+# Document processing
+PyPDF2==3.0.1
+python-docx==1.1.0
+pdfplumber==0.10.0

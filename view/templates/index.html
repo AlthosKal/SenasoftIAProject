@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedicoIA - Asistente Médico con IA</title>
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='Medico IA.png') }}" type="image/png">
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        .message-bubble {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-container {
+            min-height: 60vh;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .sidebar {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='Medio-IA-Blanco.png') }}" alt="MedicoIA" class="w-8 h-8">
+                    <h1 class="text-xl font-semibold text-gray-800">MedicoIA</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">Asistente Médico Especializado</span>
+                    <div class="flex items-center space-x-2">
+                        <a href="/documents" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700">
+                            <i class="fas fa-file-upload mr-1"></i> Documentos
+                        </a>
+                        {% if conversation_id %}
+                            <a href="/" class="bg-teal-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-teal-700">
+                                <i class="fas fa-plus mr-1"></i> Nueva Conversación
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <!-- Sidebar - Historial -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sidebar">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-history mr-2 text-teal-600"></i>
+                        Historial de Conversaciones
+                    </h3>
+                    
+                    {% if conversations %}
+                        <div class="space-y-2">
+                            {% for conv in conversations %}
+                                <a href="/conversation/{{ conv.conversation_id }}" 
+                                   class="block p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors
+                                          {% if conv.conversation_id == conversation_id %}bg-teal-50 border-teal-200{% endif %}">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                                {{ conv.last_message[:50] }}...
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                {% if conv.last_date %}
+                                                    {{ conv.last_date if conv.last_date is string else conv.last_date.strftime('%d/%m/%Y %H:%M') }}
+                                                {% else %}
+                                                    Sin fecha
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <span class="text-xs bg-teal-100 text-teal-800 px-2 py-1 rounded-full ml-2">
+                                            {{ conv.message_count }} msgs
+                                        </span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-comments text-3xl mb-3 opacity-50"></i>
+                            <p>No hay conversaciones previas</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Chat Principal -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    
+                    <!-- Área de Mensajes -->
+                    <div class="chat-container p-6">
+                        
+                        {% if not conversation_history and not user_message %}
+                            <!-- Pantalla de Bienvenida -->
+                            <div class="text-center py-12">
+                                <img src="{{ url_for('static', filename='Medico IA.png') }}" alt="MedicoIA" class="w-24 h-24 mx-auto mb-6">
+                                <h2 class="text-2xl font-semibold text-gray-800 mb-4">¡Hola! Soy MedicoIA</h2>
+                                <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+                                    Soy tu asistente médico especializado. Puedo ayudarte con información médica educativa, 
+                                    análisis de síntomas y responder preguntas sobre salud.
+                                </p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
+                                    <form method="POST" action="/chat" class="contents">
+                                        <button type="submit" name="message" value="¿Cuáles son los síntomas de la gripe?" 
+                                                class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors">
+                                            <div class="flex items-center space-x-3">
+                                                <i class="fas fa-thermometer-half text-teal-600"></i>
+                                                <span class="text-sm">Síntomas de gripe</span>
+                                            </div>
+                                        </button>
+                                        
+                                        <button type="submit" name="message" value="¿Qué debo hacer si tengo dolor de cabeza?" 
+                                                class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors">
+                                            <div class="flex items-center space-x-3">
+                                                <i class="fas fa-head-side-virus text-teal-600"></i>
+                                                <span class="text-sm">Dolor de cabeza</span>
+                                            </div>
+                                        </button>
+                                        
+                                        <button type="submit" name="message" value="¿Cuáles son los primeros auxilios básicos?" 
+                                                class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors">
+                                            <div class="flex items-center space-x-3">
+                                                <i class="fas fa-first-aid text-teal-600"></i>
+                                                <span class="text-sm">Primeros auxilios</span>
+                                            </div>
+                                        </button>
+                                        
+                                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors">
+                                            <div class="flex items-center space-x-3">
+                                                <i class="fas fa-image text-teal-600"></i>
+                                                <span class="text-sm">Analizar imagen médica</span>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                                <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-3xl mx-auto">
+                                    <p class="text-sm text-yellow-800">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                                        <strong>Importante:</strong> Esta información es solo educativa y no reemplaza la consulta médica profesional.
+                                    </p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Historial de Conversación -->
+                            {% if conversation_history %}
+                                {% for entry in conversation_history %}
+                                    <!-- Mensaje del Usuario -->
+                                    <div class="message-bubble flex justify-end mb-4">
+                                        <div class="max-w-3xl">
+                                            <div class="bg-teal-600 text-white rounded-lg px-4 py-3 shadow-sm">
+                                                <div class="flex items-start space-x-3">
+                                                    <div class="flex-1">
+                                                        <p class="text-sm leading-relaxed">{{ entry.prompt }}</p>
+                                                    </div>
+                                                    <div class="flex-shrink-0">
+                                                        <div class="w-8 h-8 rounded-full bg-teal-700 flex items-center justify-center">
+                                                            <i class="fas fa-user text-white text-sm"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Respuesta del Asistente -->
+                                    <div class="message-bubble flex justify-start mb-6">
+                                        <div class="max-w-3xl">
+                                            <div class="bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+                                                <div class="flex items-start space-x-3">
+                                                    <div class="flex-shrink-0">
+                                                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                                            <i class="fas fa-user-md text-gray-600 text-sm"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <p class="text-sm leading-relaxed text-gray-800">{{ entry.response }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            
+                            <!-- Mensaje y Respuesta Actuales -->
+                            {% if user_message %}
+                                <!-- Mensaje del Usuario Actual -->
+                                <div class="message-bubble flex justify-end mb-4">
+                                    <div class="max-w-3xl">
+                                        <div class="bg-teal-600 text-white rounded-lg px-4 py-3 shadow-sm">
+                                            <div class="flex items-start space-x-3">
+                                                <div class="flex-1">
+                                                    <p class="text-sm leading-relaxed">{{ user_message }}</p>
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <div class="w-8 h-8 rounded-full bg-teal-700 flex items-center justify-center">
+                                                        <i class="fas fa-user text-white text-sm"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if bot_response %}
+                                    <!-- Respuesta del Asistente Actual -->
+                                    <div class="message-bubble flex justify-start mb-6">
+                                        <div class="max-w-3xl">
+                                            <div class="bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+                                                <div class="flex items-start space-x-3">
+                                                    <div class="flex-shrink-0">
+                                                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                                            <i class="fas fa-user-md text-gray-600 text-sm"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <p class="text-sm leading-relaxed text-gray-800">{{ bot_response }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {% if error %}
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                                        <p class="text-red-800 text-sm">{{ error }}</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Formulario de Entrada -->
+                    <div class="border-t border-gray-200 p-4">
+                        <form method="POST" action="{% if conversation_id %}/conversation/{{ conversation_id }}{% else %}/chat{% endif %}" 
+                              enctype="multipart/form-data" class="space-y-4">
+                            
+                            {% if conversation_id %}
+                                <input type="hidden" name="conversation_id" value="{{ conversation_id }}">
+                            {% endif %}
+                            
+                            <!-- Subida de Imagen -->
+                            <div class="flex items-center space-x-4">
+                                <label for="image" class="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                                    <i class="fas fa-paperclip text-gray-500"></i>
+                                    <span class="text-sm text-gray-700">Adjuntar imagen médica</span>
+                                    <input type="file" id="image" name="image" accept="image/*" class="hidden">
+                                </label>
+                            </div>
+                            
+                            <!-- Campo de Mensaje -->
+                            <div class="flex space-x-3">
+                                <div class="flex-1">
+                                    <textarea name="message" 
+                                            placeholder="Escribe tu pregunta médica aquí..." 
+                                            class="w-full resize-none border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                            rows="3"
+                                            maxlength="1000"
+                                            required></textarea>
+                                </div>
+                                <button type="submit" 
+                                        class="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors flex items-center space-x-2">
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>Enviar</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
