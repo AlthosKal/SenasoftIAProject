@@ -1,0 +1,66 @@
+services:
+#APP de Medicoia
+  medicoia:
+    image: yefff/image-backend-medicoia:1.0.0
+    container_name: medicoia
+    env_file:
+      - .env.docker
+    ports:
+      - "5000:5000"
+    depends_on:
+      medicoia-llm:
+        condition: service_healthy
+      medicoia-model-setup:
+        condition: service_completed_successfully
+    networks:
+      - medicoia-network
+    restart: unless-stopped
+
+#LLM  de Medicoia
+  medicoia-llm:
+    image: ollama/ollama
+    container_name: medicoia-llm
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - medicoia-network
+    restart: unless-stopped
+
+  # Servicio para descargar el modelo automáticamente
+  medicoia-model-setup:
+    image: curlimages/curl:latest
+    container_name: medicoia-model-setup
+    depends_on:
+      medicoia-llm:
+        condition: service_healthy
+    command: |
+      sh -c "
+        echo 'Verificando si el modelo AlthosKal/medicoia existe...'
+        if ! curl -s http://medicoia-llm:11434/api/tags | grep -q 'AlthosKal/medicoia'; then
+          echo 'Descargando modelo AlthosKal/medicoia...'
+          curl -X POST http://medicoia-llm:11434/api/pull -d '{\"name\":\"AlthosKal/medicoia\"}'
+          echo 'Modelo descargado correctamente'
+        else
+          echo 'Modelo ya existe, continuando...'
+        fi
+      "
+    networks:
+      - medicoia-network
+    restart: "no"
+
+volumes:
+  ollama_data:
+
+networks:
+  medicoia-network:
+    driver: bridge
